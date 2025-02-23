@@ -14,7 +14,7 @@ class Pagination
      * A next page token will be returned whenever the set of available results exceeds the current page size.
      * The expiration period for this token is 15 minutes.
      */
-    public string $next_page_token;
+    public ?string $next_page_token = null;
 
     public int $page_count;
 
