@@ -13,6 +13,7 @@ use Msaaq\Zoom\Exception\MissingScopeException;
 use Msaaq\Zoom\Exception\MissingWebinarPlanException;
 use Msaaq\Zoom\Exception\NotFoundException;
 use Msaaq\Zoom\Exception\UnauthorizedException;
+use Msaaq\Zoom\Exception\WebinarIsOverException;
 
 class HttpClient
 {
@@ -63,6 +64,10 @@ class HttpClient
 
             if (str_contains($message, 'Webinar plan is missing')) {
                 throw new MissingWebinarPlanException($message, $code);
+            }
+
+            if (str_contains($message, 'The webinar is over')) {
+                throw new WebinarIsOverException($message, $code);
             }
 
             logger()->error($message, ['response' => $response->json()]);
