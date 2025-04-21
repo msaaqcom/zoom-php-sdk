@@ -1,5 +1,5 @@
 {
-    "name": "msaaq/zoom-sdk",
+    "name": "msaaq/zoom-php-sdk",
     "type": "library",
     "autoload": {
         "psr-4": {
@@ -9,11 +9,11 @@
     "authors": [
         {
             "name": "Hussam Abd",
-            "email": "hussam@msaaq.com"
+            "email": "hussam3bd@gmail.com"
         }
     ],
     "require": {
-        "illuminate/http": "^8.0|^9.0|^10.0|^11.0",
-        "illuminate/support": "^8.0|^9.0|^10.0|^11.0"
+        "illuminate/http": "^8.0|^9.0|^10.0|^11.0|^12.0",
+        "illuminate/support": "^8.0|^9.0|^10.0|^11.0|^12.0"
     }
 }
