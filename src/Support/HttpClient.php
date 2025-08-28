@@ -56,11 +56,13 @@ class HttpClient
             }
 
             if ($response->status() == 404) {
-                if ((int) $code === 3001) {
-                    throw new MeetingDoesNotExistException($message, $code);
-                }
+                switch ((int) $code) {
+                    case 3001:
+                        throw new MeetingDoesNotExistException($message);
 
-                throw new NotFoundException($message, $code);
+                    default:
+                        throw new NotFoundException($message, $code);
+                }
             }
 
             if (str_contains($message, 'Invalid access token, does not contain scopes')) {
