@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Msaaq\Zoom\Support;
 
 use Exception;
-use Illuminate\Http\Client\PendingRequest;
+use Msaaq\Zoom\AccessToken;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use Msaaq\Zoom\AccessToken;
-use Msaaq\Zoom\Exception\MissingScopeException;
-use Msaaq\Zoom\Exception\MissingWebinarPlanException;
+use Illuminate\Http\Client\PendingRequest;
 use Msaaq\Zoom\Exception\NotFoundException;
+use Msaaq\Zoom\Exception\MissingScopeException;
 use Msaaq\Zoom\Exception\UnauthorizedException;
 use Msaaq\Zoom\Exception\WebinarIsOverException;
+use Msaaq\Zoom\Exception\MissingWebinarPlanException;
+use Msaaq\Zoom\Exception\MeetingDoesNotExistException;
 
 class HttpClient
 {
@@ -55,6 +56,10 @@ class HttpClient
             }
 
             if ($response->status() == 404) {
+                if ((int) $code === 3001) {
+                    throw new MeetingDoesNotExistException($message, $code);
+                }
+
                 throw new NotFoundException($message, $code);
             }
 
