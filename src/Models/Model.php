@@ -6,6 +6,7 @@ namespace Msaaq\Zoom\Models;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use ReflectionNamedType;
 use ReflectionProperty;
 use UnitEnum;
 
@@ -32,7 +33,7 @@ class Model
             } elseif ($class = $this->isModel($property)) {
                 $this->$property = new $class($value);
             } else {
-                $this->$property = $value;
+                $this->$property = $this->coerce($property, $value);
             }
         }
     }
@@ -54,9 +55,43 @@ class Model
         return null;
     }
 
+    /**
+     * Coerce a raw API value to the property's declared scalar type.
+     *
+     * Zoom is inconsistent about whether numeric identifiers come back as JSON numbers or as
+     * quoted strings, and some identifiers (registrant ids) are not numeric at all. Assigning
+     * raw therefore throws a TypeError for the exact same field depending on the endpoint and
+     * the value — and because TypeError extends Error rather than Exception, callers that guard
+     * with catch (Exception) do not see it, losing work that the API has already performed.
+     */
+    private function coerce(string $property, mixed $value): mixed
+    {
+        $type = $this->getPropertyType($property);
+
+        if ($type === null || $value === null || ! is_scalar($value)) {
+            return $value;
+        }
+
+        return match ($type) {
+            'int' => is_numeric($value) ? (int) $value : $value,
+            'float' => is_numeric($value) ? (float) $value : $value,
+            'string' => (string) $value,
+            'bool' => (bool) $value,
+            default => $value,
+        };
+    }
+
+    /**
+     * The property's declared type name, or null when it is absent or a union.
+     *
+     * A union (string|int) accepts the raw value as-is, so there is nothing to coerce and
+     * nothing to resolve to an enum or nested model.
+     */
     private function getPropertyType(string $property): ?string
     {
-        return (new ReflectionProperty($this, $property))->getType()?->getName();
+        $type = (new ReflectionProperty($this, $property))->getType();
+
+        return $type instanceof ReflectionNamedType ? $type->getName() : null;
     }
 
     private function isEnum(string $property): bool|string
