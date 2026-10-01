@@ -49,7 +49,16 @@ class HttpClient
         if ($response->failed()) {
             $message = $response->json('message') ?? $response->json('reason');
             $code = $response->json('code') ?? $response->json('error');
-            $message = "$message - Code: $code";
+
+            // Not every Zoom error body carries message/code — validation failures in particular
+            // answer with a different shape. Falling through with an empty string produced
+            // exceptions reading " - Code: " with code 0, which no caller can branch on and no
+            // amount of log reading can diagnose. Keep the raw body as the message instead.
+            if ($message === null && $code === null) {
+                $message = trim((string) $response->body()) ?: "HTTP {$response->status()}";
+            } else {
+                $message = "$message - Code: $code";
+            }
 
             if ($response->status() == 401) {
                 throw new UnauthorizedException($message, $code);
@@ -77,7 +86,10 @@ class HttpClient
                 throw new WebinarIsOverException($message, $code);
             }
 
-            logger()->error($message, ['response' => $response->json()]);
+            logger()->error($message, [
+                'status' => $response->status(),
+                'response' => $response->json() ?? $response->body(),
+            ]);
 
             throw new Exception($message, (int) $code);
         }

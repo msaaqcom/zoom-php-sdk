@@ -14,7 +14,7 @@ class BaseMeeting extends Model
 {
     public string $uuid;
 
-    public int $id;
+    public string|int $id;
 
     public string $host_id;
 

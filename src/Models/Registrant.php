@@ -6,7 +6,7 @@ namespace Msaaq\Zoom\Models;
 
 class Registrant extends Model
 {
-    public int $id;
+    public string|int $id;
 
     public string $address;
 
